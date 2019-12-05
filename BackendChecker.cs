@@ -590,7 +590,7 @@ public class BackendChecker : Singleton<BackendChecker>
 /*
  사용 예제
  
- public void TokenCheck(System.Action SuccessCallback = null, System.Action FailedCallback = null)
+    public void TokenCheck(System.Action SuccessCallback = null, System.Action FailedCallback = null)
     {
         // 액세스 토큰이 살아있는가?
         BackendChecker.Instance.BroCheckerAsync_WithSaveToken("AccessTokenAlive", Backend.BMember.IsAccessTokenAlive,
@@ -639,5 +639,80 @@ public class BackendChecker : Singleton<BackendChecker>
         });
     }
 
+    public void Login(System.Action Success_NewUser = null, System.Action Success_ExistingUser = null, System.Action FailedCallback = null)
+    {
+        // 로그인 시도함
+        BackendChecker.Instance.BroCheckerAsync_WithSaveToken("LoginWithTheBackendTokenAsync", Backend.BMember.LoginWithTheBackendTokenAsync,
+        () => // 로그인 성공
+        {
+            //Debug.Log("로그인 성공!");
+
+            if (false == IsLogin)
+            {
+                IsLogin = true;
+            }
+            
+            BackendChecker.Instance.RowReceiverAsync("nickname_GetUserInfo", Backend.BMember.GetUserInfo,
+            (BRO_Callback) =>
+            {
+                // nickname 데이터가 존재하지 않음 (신규유저로 판별)
+                if (null == BRO_Callback["nickname"])
+                {
+                    // 백엔드 닉네임을 업데이트한다.
+                    UpdateNickname(Success_NewUser, null, FailedCallback);
+                }
+                // nickname 데이터가 존재함 (기존유저로 판별)
+                else
+                {
+                    // 현재 구글 닉네임과 백엔드 닉네임이 동일한지 검사한다. 
+                    // 닉네임이 동일함.
+                    if (PlayGamesPlatform.Instance.GetUserDisplayName() == BRO_Callback["nickname"].ToString())
+                    {
+                        Success_ExistingUser?.Invoke();
+                    }
+                    // 닉네임이 동일하지 않음.
+                    else
+                    {
+                        // 백엔드 닉네임을 업데이트한다.
+                        UpdateNickname(null, Success_ExistingUser, FailedCallback);
+                    }
+                }
+            });
+        },
+        () => // 로그인 실패
+        {
+            //Debug.Log("로그인 실패, 재접속 요청함");
+
+            // 재접속 UI 호출
+            FailedCallback?.Invoke();
+        });
+    }
+    
+    private void UpdateNickname(System.Action Success_NewUser = null, System.Action Success_ExistingUser = null, System.Action FailedCallback = null)
+    {
+        BackendChecker.Instance.BroCheckerAsync_WithoutSaveToken("UpdateNickname_"+ PlayGamesPlatform.Instance.GetUserDisplayName(),
+            Backend.BMember.UpdateNickname, PlayGamesPlatform.Instance.GetUserDisplayName(),
+        () => // 닉네임 등록 성공
+        {
+            if (Success_NewUser != null)
+            {
+                //Debug.Log("신규 유저 로그인 / 닉네임 등록 성공");
+                Success_NewUser?.Invoke();
+            }
+            else if (Success_ExistingUser != null)
+            {
+                //Debug.Log("기존 유저 로그인 / 닉네임 업데이트 성공");
+                Success_ExistingUser?.Invoke();
+            }
+            
+        },
+        () => // 닉네임 등록 실패
+        {
+            //Debug.Log("기존 유저 로그인 / 닉네임 업데이트 실패");
+
+            // 재접속 UI 호출
+            FailedCallback?.Invoke();
+        });
+    }
 
 */
