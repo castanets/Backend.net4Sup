@@ -586,6 +586,59 @@ public class BackendChecker : Singleton<BackendChecker>
     #endregion
 }
 
+public class Singleton<AnyClass> : MonoBehaviour
+    where AnyClass : MonoBehaviour
+{
+    private void Awake()
+    {
+        SingletonInit();
+    }
+
+    // 싱글턴 인스턴스와 프로퍼티
+    #region Instance
+
+    protected void SingletonInit()
+    {
+        if (instance == null)
+        {
+            //Debug.Log(gameObject.name + " 의 Instance 생성됨");
+            instance = this as AnyClass;
+        }
+        else
+        {
+            Debug.LogError(gameObject.name + " 의 Instance가 이미 생성되어 있음!");
+        }
+    }
+
+    private static AnyClass instance = null;
+
+    public static AnyClass Instance
+    {
+        get
+        {
+            // 인스턴스가 이미 생성된 경우 리턴한다.
+            if (instance != null) return instance;
+            else
+            {
+                // 해당 컴포넌트의 유무를 검색한다.
+                instance = FindObjectOfType(typeof(AnyClass)) as AnyClass;
+
+                // 검색에 실패했다면 컴포넌트를 담은 '오브젝트'를 새로 생성한다.
+                if (instance == null)
+                {
+                    string Name = typeof(AnyClass).ToString();
+
+                    Debug.LogError(Name + " 컴포넌트를 찾을 수 없으므로 새로 생성됨.");
+
+                    instance = new GameObject(Name, typeof(AnyClass)).GetComponent<AnyClass>();
+                }
+
+                return instance;
+            }
+        }
+    }
+    #endregion
+}
 
 /*
  사용 예제
