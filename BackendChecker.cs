@@ -585,3 +585,59 @@ public class BackendChecker : Singleton<BackendChecker>
     }
     #endregion
 }
+
+
+/*
+ 사용 예제
+ 
+ public void TokenCheck(System.Action SuccessCallback = null, System.Action FailedCallback = null)
+    {
+        // 액세스 토큰이 살아있는가?
+        BackendChecker.Instance.BroCheckerAsync_WithSaveToken("AccessTokenAlive", Backend.BMember.IsAccessTokenAlive,
+        () => // 토큰 있음
+        {
+            //Debug.Log("토큰 있음. 로그인 시도함");
+
+            // 로그인 시도함
+            SuccessCallback?.Invoke();
+        },
+        () => // 토큰 없음 혹은 유효하지 않음
+        {
+            //Debug.Log("토큰 없거나 유효하지 않음. 토큰 리프레시 시도함");
+
+            // 토큰 리프레시 시도함
+            BackendChecker.Instance.BroCheckerAsync_WithSaveToken("RefreshTheBackendTokenAsync", Backend.BMember.RefreshTheBackendTokenAsync,
+            () => // 리프레시 성공
+            {
+                //Debug.Log("토큰 리프레시 성공, 로그인 시도함");
+
+                // 로그인 시도함
+                SuccessCallback?.Invoke();
+            },
+            () => // 리프레시 실패
+            {
+                //Debug.Log("토큰 리프레시 실패, 페더레이션 인증 시도함");
+
+                // 페더레이션 인증 시도함
+                BackendChecker.Instance.BroCheckerAsync_WithSaveToken("AuthorizeFederationAsync", Backend.BMember.AuthorizeFederationAsync,
+                    ConnectManager_Google.Instance.GetToken(), FederationType.Google, "",
+                () => // 인증 성공
+                {
+                    //Debug.Log("페더레이션 인증 성공, 로그인 시도함");
+
+                    // 로그인 시도함
+                    SuccessCallback?.Invoke();
+                },
+                () => // 인증 실패
+                {
+                    //Debug.Log("페더레이션 인증 실패, 재접속 요청함");
+
+                    // 재접속 UI 호출
+                    FailedCallback?.Invoke();
+                });
+            });
+        });
+    }
+
+
+*/
